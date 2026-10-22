@@ -201,7 +201,7 @@
     "energy_cost": 143.30540001759604,
     "import_kwh": 1927.6837365589656,
     "export_kwh": 1247.3373972141728,
-    "curtailed_kwh": 3.2473160876770657,
+    "curtailed_kwh": 3.2473160876770644,
     "discharge_kwh": 1593.8912093140448,
     "degradation": 31.877824186280897,
     "regime": "consumer",
@@ -266,14 +266,14 @@
     "consistent": true
    },
    "optimal": {
-    "total": 176.77127881160402,
+    "total": 176.771278811604,
     "bill_total": 147.49174488791357,
     "energy_cost": 243.78354488791365,
     "import_kwh": 1332.927965606002,
-    "export_kwh": 549.1136154160391,
-    "curtailed_kwh": 121.15027283612771,
-    "discharge_kwh": 1463.9766961845219,
-    "degradation": 29.279533923690437,
+    "export_kwh": 549.113615416039,
+    "curtailed_kwh": 121.15027283612773,
+    "discharge_kwh": 1463.9766961845216,
+    "degradation": 29.279533923690433,
     "regime": "consumer",
     "consistent": true
    }
@@ -481,7 +481,7 @@
     "energy_cost": -5.552301985113175,
     "import_kwh": 3113.7142683045486,
     "export_kwh": 2291.198045801233,
-    "curtailed_kwh": 2.435927786835169,
+    "curtailed_kwh": 2.4359277868351725,
     "discharge_kwh": 2880.7226524483312,
     "degradation": 57.614453048966624,
     "regime": "consumer",
@@ -550,10 +550,10 @@
     "bill_total": 88.51982032494232,
     "energy_cost": 184.8116203249424,
     "import_kwh": 1479.8834168266317,
-    "export_kwh": 736.5511844449792,
-    "curtailed_kwh": 17.16934023657809,
-    "discharge_kwh": 2035.4660293056722,
-    "degradation": 40.70932058611344,
+    "export_kwh": 736.5511844449791,
+    "curtailed_kwh": 17.169340236578137,
+    "discharge_kwh": 2035.4660293056718,
+    "degradation": 40.709320586113435,
     "regime": "consumer",
     "consistent": true
    }

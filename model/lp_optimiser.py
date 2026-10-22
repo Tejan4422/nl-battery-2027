@@ -10,6 +10,7 @@ Per hour t in a window of T hours:
                e[t] = e[t-1] + eta*c - d/eta,  e[-1] = e0 (battery)
                c <= P*z,  d <= P*(1 - z)                 (no simultaneous charge/discharge)
                i <= (L+P)*w,  x <= (S+P)*(1 - w)         (no simultaneous import/export)
+               u <= S*(1 - w)                            (curtail only while exporting)
                0 <= e <= E,  0 <= u <= S where curtailment is allowed, else u = 0
 
 The binaries matter. With negative prices an LP relaxation would charge and
@@ -65,12 +66,13 @@ def optimise_window(load, solar, buy, sell, can_curtail, battery: Battery, e0: f
     dz = hstack([Z, I, Z, Z, Z, Z, P * I, Z])
     iw = hstack([Z, Z, I, Z, Z, Z, Z, -m_imp])
     xw = hstack([Z, Z, Z, I, Z, Z, Z, m_exp])
-    A = vstack([balance, soc, cz, dz, iw, xw]).tocsr()
+    uw = hstack([Z, Z, Z, Z, I, Z, Z, diags(solar, format="csr")])
+    A = vstack([balance, soc, cz, dz, iw, xw, uw]).tocsr()
     rhs_soc = np.zeros(T)
     rhs_soc[0] = e0
     ninf = np.full(T, -np.inf)
-    lb = np.r_[load - solar, rhs_soc, ninf, ninf, ninf, ninf]
-    ub = np.r_[load - solar, rhs_soc, np.zeros(T), np.full(T, P), np.zeros(T), solar + P]
+    lb = np.r_[load - solar, rhs_soc, ninf, ninf, ninf, ninf, ninf]
+    ub = np.r_[load - solar, rhs_soc, np.zeros(T), np.full(T, P), np.zeros(T), solar + P, solar]
 
     u_max = np.where(can_curtail, solar, 0.0)
     lo = np.zeros(8 * T)
