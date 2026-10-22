@@ -22,6 +22,16 @@ flow per hour, so it has neither option.
 Rolling horizon: day k is optimised together with day k+1 (`lookahead_days`)
 and only day k is committed. The day-ahead auction publishes tomorrow's prices
 around 13:00, so this assumes perfect foresight of at most ~35 hours.
+
+Terminal value: energy still stored at the end of a window gets a value per
+kWh halfway between what it could be sold for and what it would cost to buy
+back, after losses and degradation:
+    eta * max(0, (min(buy) + max(min(sell), 0)) / 2 - deg)
+Without it the window end looks like the end of the world and the battery is
+kept too empty, which makes the optimiser lose to the simple rule on a fixed
+contract. Valuing it at the full buy price is too much: the battery then
+hoards energy rather than using it. The midpoint was chosen empirically
+(see README, validation) and is used identically by the browser DP.
 """
 
 import numpy as np
@@ -31,8 +41,16 @@ from scipy.sparse import csr_array, diags, eye, hstack, vstack
 from .household import Battery, Inputs, curtailable
 
 
-def optimise_window(load, solar, buy, sell, can_curtail, battery: Battery, e0: float):
-    """Optimal (c, d, e_end) for one window. All arrays have length T."""
+def terminal_value(buy: np.ndarray, sell: np.ndarray, battery: Battery) -> float:
+    """EUR per kWh stored at the end of a window (shared with the TypeScript DP)."""
+    mid = (float(np.min(buy)) + max(float(np.min(sell)), 0.0)) / 2
+    return battery.eta * max(0.0, mid - battery.degradation_eur_per_kwh)
+
+
+def optimise_window(load, solar, buy, sell, can_curtail, battery: Battery, e0: float,
+                    end_value: float = 0.0):
+    """Optimal (c, d, e_end) for one window. All arrays have length T.
+    `end_value` is the value per kWh left in the battery after the last hour."""
     T = len(load)
     eta, P, E = battery.eta, battery.power_kw, battery.capacity_kwh
     I = eye(T, format="csr")
@@ -58,8 +76,10 @@ def optimise_window(load, solar, buy, sell, can_curtail, battery: Battery, e0: f
     lo = np.zeros(8 * T)
     hi = np.r_[np.full(T, P), np.full(T, P), load + P, solar + P, u_max,
                np.full(T, E), np.ones(T), np.ones(T)]
+    e_cost = np.zeros(T)
+    e_cost[-1] = -end_value
     cost = np.r_[np.zeros(T), np.full(T, battery.degradation_eur_per_kwh), buy, -sell,
-                 np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T)]
+                 np.zeros(T), e_cost, np.zeros(T), np.zeros(T)]
     integrality = np.r_[np.zeros(6 * T), np.ones(2 * T)]
 
     res = milp(cost, constraints=LinearConstraint(A, lb, ub), bounds=Bounds(lo, hi),
@@ -84,7 +104,7 @@ def optimise(inputs: Inputs, battery: Battery, buy: np.ndarray, sell: np.ndarray
     for k, (a, b) in enumerate(days):
         end = days[min(k + lookahead_days, len(days) - 1)][1]
         cw, dw, _ = optimise_window(inputs.load[a:end], inputs.solar[a:end], buy[a:end], sell[a:end],
-                                    can_curtail[a:end], battery, e)
+                                    can_curtail[a:end], battery, e, terminal_value(buy[a:end], sell[a:end], battery))
         h = b - a
         c[a:b], d[a:b] = cw[:h], dw[:h]
         e = float(np.clip(e + np.sum(battery.eta * c[a:b] - d[a:b] / battery.eta), 0, battery.capacity_kwh))

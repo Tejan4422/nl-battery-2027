@@ -1,0 +1,562 @@
+[
+ {
+  "name": "year2025_5kwh_fixed_2026",
+  "description": "Full year 2025, 3500 kWh load, 3000 kWh solar",
+  "inputs": {
+   "year": 2025,
+   "annual_load_kwh": 3500.0,
+   "annual_solar_kwh": 3000.0,
+   "curtail": true
+  },
+  "battery": {
+   "capacity_kwh": 5.0,
+   "power_kw": 2.5,
+   "round_trip_efficiency": 0.9,
+   "degradation_eur_per_kwh": 0.02
+  },
+  "tariff": {
+   "contract": "fixed",
+   "netting": true,
+   "vat": 0.21,
+   "energy_tax": 0.09161,
+   "tax_reduction": 519.8,
+   "grid_fee": 380.0,
+   "standing_charge": 72.0,
+   "supply_price": 0.13,
+   "feed_in_compensation": 0.124,
+   "feed_in_cost": 0.1,
+   "markup": 0.0,
+   "feed_in_fee": 0.0,
+   "feed_in_vat_while_netting": false
+  },
+  "lookahead_days": 1,
+  "expected": {
+   "none": {
+    "total": 247.09077846640184,
+    "bill_total": 247.09077846640184,
+    "energy_cost": 329.12877846640185,
+    "import_kwh": 2112.0225493091066,
+    "export_kwh": 1612.022549309107,
+    "curtailed_kwh": 0.0,
+    "discharge_kwh": 0.0,
+    "degradation": 0.0,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "rule": {
+    "total": 174.95899936346268,
+    "bill_total": 157.91668413325976,
+    "energy_cost": 239.95468413325983,
+    "import_kwh": 1259.9067877989605,
+    "export_kwh": 665.2272587422781,
+    "curtailed_kwh": 0.0,
+    "discharge_kwh": 852.1157615101461,
+    "degradation": 17.04231523020292,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "optimal": {
+    "total": 174.95899936346268,
+    "bill_total": 157.91668413325976,
+    "energy_cost": 239.95468413325983,
+    "import_kwh": 1259.9067877989605,
+    "export_kwh": 665.2272587422781,
+    "curtailed_kwh": 0.0,
+    "discharge_kwh": 852.1157615101461,
+    "degradation": 17.04231523020292,
+    "regime": "consumer",
+    "consistent": true
+   }
+  }
+ },
+ {
+  "name": "year2025_5kwh_fixed_2027",
+  "description": "Full year 2025, 3500 kWh load, 3000 kWh solar",
+  "inputs": {
+   "year": 2025,
+   "annual_load_kwh": 3500.0,
+   "annual_solar_kwh": 3000.0,
+   "curtail": true
+  },
+  "battery": {
+   "capacity_kwh": 5.0,
+   "power_kw": 2.5,
+   "round_trip_efficiency": 0.9,
+   "degradation_eur_per_kwh": 0.02
+  },
+  "tariff": {
+   "contract": "fixed",
+   "netting": false,
+   "vat": 0.21,
+   "energy_tax": 0.088,
+   "tax_reduction": 519.58,
+   "grid_fee": 380.0,
+   "standing_charge": 72.0,
+   "supply_price": 0.13,
+   "feed_in_compensation": 0.124,
+   "feed_in_cost": 0.1,
+   "markup": 0.0,
+   "feed_in_fee": 0.0,
+   "feed_in_vat_while_netting": false
+  },
+  "lookahead_days": 1,
+  "expected": {
+   "none": {
+    "total": 470.5014404088288,
+    "bill_total": 470.5014404088288,
+    "energy_cost": 552.2732404088288,
+    "import_kwh": 2112.0225493091066,
+    "export_kwh": 1612.022549309107,
+    "curtailed_kwh": 0.0,
+    "discharge_kwh": 0.0,
+    "degradation": 0.0,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "rule": {
+    "total": 265.61304593958573,
+    "bill_total": 248.57073070938281,
+    "energy_cost": 330.3425307093829,
+    "import_kwh": 1259.9067877989605,
+    "export_kwh": 665.2272587422781,
+    "curtailed_kwh": 0.0,
+    "discharge_kwh": 852.1157615101461,
+    "degradation": 17.04231523020292,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "optimal": {
+    "total": 265.61304593958573,
+    "bill_total": 248.57073070938281,
+    "energy_cost": 330.3425307093829,
+    "import_kwh": 1259.9067877989605,
+    "export_kwh": 665.2272587422781,
+    "curtailed_kwh": 0.0,
+    "discharge_kwh": 852.1157615101461,
+    "degradation": 17.04231523020292,
+    "regime": "consumer",
+    "consistent": true
+   }
+  }
+ },
+ {
+  "name": "year2025_5kwh_dynamic_2026",
+  "description": "Full year 2025, 3500 kWh load, 3000 kWh solar",
+  "inputs": {
+   "year": 2025,
+   "annual_load_kwh": 3500.0,
+   "annual_solar_kwh": 3000.0,
+   "curtail": true
+  },
+  "battery": {
+   "capacity_kwh": 5.0,
+   "power_kw": 2.5,
+   "round_trip_efficiency": 0.9,
+   "degradation_eur_per_kwh": 0.02
+  },
+  "tariff": {
+   "contract": "dynamic",
+   "netting": true,
+   "vat": 0.21,
+   "energy_tax": 0.09161,
+   "tax_reduction": 519.8,
+   "grid_fee": 380.0,
+   "standing_charge": 60.0,
+   "supply_price": 0.0,
+   "feed_in_compensation": 0.0,
+   "feed_in_cost": 0.0,
+   "markup": 0.02,
+   "feed_in_fee": 0.015,
+   "feed_in_vat_while_netting": true
+  },
+  "lookahead_days": 1,
+  "expected": {
+   "none": {
+    "total": 254.98365665666972,
+    "bill_total": 254.98365665666972,
+    "energy_cost": 351.54165665666966,
+    "import_kwh": 2112.0225493091066,
+    "export_kwh": 1597.4968301628976,
+    "curtailed_kwh": 14.525719146209472,
+    "discharge_kwh": 0.0,
+    "degradation": 0.0,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "rule": {
+    "total": 174.3058666878402,
+    "bill_total": 157.26355145763728,
+    "energy_cost": 253.82155145763727,
+    "import_kwh": 1259.9067877989605,
+    "export_kwh": 658.1586887507119,
+    "curtailed_kwh": 7.068569991566117,
+    "discharge_kwh": 852.1157615101461,
+    "degradation": 17.04231523020292,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "optimal": {
+    "total": 78.62522420387697,
+    "bill_total": 46.74740001759608,
+    "energy_cost": 143.30540001759604,
+    "import_kwh": 1927.6837365589656,
+    "export_kwh": 1247.3373972141728,
+    "curtailed_kwh": 3.2473160876770657,
+    "discharge_kwh": 1593.8912093140448,
+    "degradation": 31.877824186280897,
+    "regime": "consumer",
+    "consistent": true
+   }
+  }
+ },
+ {
+  "name": "year2025_5kwh_dynamic_2027",
+  "description": "Full year 2025, 3500 kWh load, 3000 kWh solar",
+  "inputs": {
+   "year": 2025,
+   "annual_load_kwh": 3500.0,
+   "annual_solar_kwh": 3000.0,
+   "curtail": true
+  },
+  "battery": {
+   "capacity_kwh": 5.0,
+   "power_kw": 2.5,
+   "round_trip_efficiency": 0.9,
+   "degradation_eur_per_kwh": 0.02
+  },
+  "tariff": {
+   "contract": "dynamic",
+   "netting": false,
+   "vat": 0.21,
+   "energy_tax": 0.088,
+   "tax_reduction": 519.58,
+   "grid_fee": 380.0,
+   "standing_charge": 60.0,
+   "supply_price": 0.0,
+   "feed_in_compensation": 0.0,
+   "feed_in_cost": 0.0,
+   "markup": 0.02,
+   "feed_in_fee": 0.015,
+   "feed_in_vat_while_netting": true
+  },
+  "lookahead_days": 1,
+  "expected": {
+   "none": {
+    "total": 415.6313620126425,
+    "bill_total": 415.6313620126425,
+    "energy_cost": 511.9231620126427,
+    "import_kwh": 2112.0225493091066,
+    "export_kwh": 859.8124313114993,
+    "curtailed_kwh": 752.210117997608,
+    "discharge_kwh": 0.0,
+    "degradation": 0.0,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "rule": {
+    "total": 236.11142821144597,
+    "bill_total": 219.06911298124305,
+    "energy_cost": 315.36091298124313,
+    "import_kwh": 1259.9067877989605,
+    "export_kwh": 294.9562547560163,
+    "curtailed_kwh": 370.2710039862617,
+    "discharge_kwh": 852.1157615101461,
+    "degradation": 17.04231523020292,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "optimal": {
+    "total": 176.77127881160402,
+    "bill_total": 147.49174488791357,
+    "energy_cost": 243.78354488791365,
+    "import_kwh": 1332.927965606002,
+    "export_kwh": 549.1136154160391,
+    "curtailed_kwh": 121.15027283612771,
+    "discharge_kwh": 1463.9766961845219,
+    "degradation": 29.279533923690437,
+    "regime": "consumer",
+    "consistent": true
+   }
+  }
+ },
+ {
+  "name": "year2025_10kwh_fixed_2026",
+  "description": "Full year 2025, 3500 kWh load, 3000 kWh solar",
+  "inputs": {
+   "year": 2025,
+   "annual_load_kwh": 3500.0,
+   "annual_solar_kwh": 3000.0,
+   "curtail": true
+  },
+  "battery": {
+   "capacity_kwh": 10.0,
+   "power_kw": 5.0,
+   "round_trip_efficiency": 0.9,
+   "degradation_eur_per_kwh": 0.02
+  },
+  "tariff": {
+   "contract": "fixed",
+   "netting": true,
+   "vat": 0.21,
+   "energy_tax": 0.09161,
+   "tax_reduction": 519.8,
+   "grid_fee": 380.0,
+   "standing_charge": 72.0,
+   "supply_price": 0.13,
+   "feed_in_compensation": 0.124,
+   "feed_in_cost": 0.1,
+   "markup": 0.0,
+   "feed_in_fee": 0.0,
+   "feed_in_vat_while_netting": false
+  },
+  "lookahead_days": 1,
+  "expected": {
+   "none": {
+    "total": 247.09077846640184,
+    "bill_total": 247.09077846640184,
+    "energy_cost": 329.12877846640185,
+    "import_kwh": 2112.0225493091066,
+    "export_kwh": 1612.022549309107,
+    "curtailed_kwh": 0.0,
+    "discharge_kwh": 0.0,
+    "degradation": 0.0,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "rule": {
+    "total": 174.5136782738862,
+    "bill_total": 157.36614863636373,
+    "energy_cost": 239.40414863636377,
+    "import_kwh": 1254.646067432983,
+    "export_kwh": 659.382013891192,
+    "curtailed_kwh": 0.0,
+    "discharge_kwh": 857.3764818761235,
+    "degradation": 17.14752963752247,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "optimal": {
+    "total": 174.5136782738863,
+    "bill_total": 157.36614863636385,
+    "energy_cost": 239.40414863636386,
+    "import_kwh": 1254.6460674329837,
+    "export_kwh": 659.3820138911926,
+    "curtailed_kwh": 0.0,
+    "discharge_kwh": 857.3764818761234,
+    "degradation": 17.147529637522467,
+    "regime": "consumer",
+    "consistent": true
+   }
+  }
+ },
+ {
+  "name": "year2025_10kwh_fixed_2027",
+  "description": "Full year 2025, 3500 kWh load, 3000 kWh solar",
+  "inputs": {
+   "year": 2025,
+   "annual_load_kwh": 3500.0,
+   "annual_solar_kwh": 3000.0,
+   "curtail": true
+  },
+  "battery": {
+   "capacity_kwh": 10.0,
+   "power_kw": 5.0,
+   "round_trip_efficiency": 0.9,
+   "degradation_eur_per_kwh": 0.02
+  },
+  "tariff": {
+   "contract": "fixed",
+   "netting": false,
+   "vat": 0.21,
+   "energy_tax": 0.088,
+   "tax_reduction": 519.58,
+   "grid_fee": 380.0,
+   "standing_charge": 72.0,
+   "supply_price": 0.13,
+   "feed_in_compensation": 0.124,
+   "feed_in_cost": 0.1,
+   "markup": 0.0,
+   "feed_in_fee": 0.0,
+   "feed_in_vat_while_netting": false
+  },
+  "lookahead_days": 1,
+  "expected": {
+   "none": {
+    "total": 470.5014404088288,
+    "bill_total": 470.5014404088288,
+    "energy_cost": 552.2732404088288,
+    "import_kwh": 2112.0225493091066,
+    "export_kwh": 1612.022549309107,
+    "curtailed_kwh": 0.0,
+    "discharge_kwh": 0.0,
+    "degradation": 0.0,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "rule": {
+    "total": 264.34812326332104,
+    "bill_total": 247.20059362579855,
+    "energy_cost": 328.9723936257987,
+    "import_kwh": 1254.646067432983,
+    "export_kwh": 659.382013891192,
+    "curtailed_kwh": 0.0,
+    "discharge_kwh": 857.3764818761235,
+    "degradation": 17.14752963752247,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "optimal": {
+    "total": 264.3481232633211,
+    "bill_total": 247.20059362579866,
+    "energy_cost": 328.97239362579876,
+    "import_kwh": 1254.6460674329833,
+    "export_kwh": 659.3820138911922,
+    "curtailed_kwh": 0.0,
+    "discharge_kwh": 857.3764818761234,
+    "degradation": 17.147529637522467,
+    "regime": "consumer",
+    "consistent": true
+   }
+  }
+ },
+ {
+  "name": "year2025_10kwh_dynamic_2026",
+  "description": "Full year 2025, 3500 kWh load, 3000 kWh solar",
+  "inputs": {
+   "year": 2025,
+   "annual_load_kwh": 3500.0,
+   "annual_solar_kwh": 3000.0,
+   "curtail": true
+  },
+  "battery": {
+   "capacity_kwh": 10.0,
+   "power_kw": 5.0,
+   "round_trip_efficiency": 0.9,
+   "degradation_eur_per_kwh": 0.02
+  },
+  "tariff": {
+   "contract": "dynamic",
+   "netting": true,
+   "vat": 0.21,
+   "energy_tax": 0.09161,
+   "tax_reduction": 519.8,
+   "grid_fee": 380.0,
+   "standing_charge": 60.0,
+   "supply_price": 0.0,
+   "feed_in_compensation": 0.0,
+   "feed_in_cost": 0.0,
+   "markup": 0.02,
+   "feed_in_fee": 0.015,
+   "feed_in_vat_while_netting": true
+  },
+  "lookahead_days": 1,
+  "expected": {
+   "none": {
+    "total": 254.98365665666972,
+    "bill_total": 254.98365665666972,
+    "energy_cost": 351.54165665666966,
+    "import_kwh": 2112.0225493091066,
+    "export_kwh": 1597.4968301628976,
+    "curtailed_kwh": 14.525719146209472,
+    "discharge_kwh": 0.0,
+    "degradation": 0.0,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "rule": {
+    "total": 173.76486956215277,
+    "bill_total": 156.6173399246303,
+    "energy_cost": 253.17533992463024,
+    "import_kwh": 1254.646067432983,
+    "export_kwh": 652.3134438996258,
+    "curtailed_kwh": 7.068569991566122,
+    "discharge_kwh": 857.3764818761235,
+    "degradation": 17.14752963752247,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "optimal": {
+    "total": -44.49584893614659,
+    "bill_total": -102.11030198511321,
+    "energy_cost": -5.552301985113175,
+    "import_kwh": 3113.7142683045486,
+    "export_kwh": 2291.198045801233,
+    "curtailed_kwh": 2.435927786835169,
+    "discharge_kwh": 2880.7226524483312,
+    "degradation": 57.614453048966624,
+    "regime": "consumer",
+    "consistent": true
+   }
+  }
+ },
+ {
+  "name": "year2025_10kwh_dynamic_2027",
+  "description": "Full year 2025, 3500 kWh load, 3000 kWh solar",
+  "inputs": {
+   "year": 2025,
+   "annual_load_kwh": 3500.0,
+   "annual_solar_kwh": 3000.0,
+   "curtail": true
+  },
+  "battery": {
+   "capacity_kwh": 10.0,
+   "power_kw": 5.0,
+   "round_trip_efficiency": 0.9,
+   "degradation_eur_per_kwh": 0.02
+  },
+  "tariff": {
+   "contract": "dynamic",
+   "netting": false,
+   "vat": 0.21,
+   "energy_tax": 0.088,
+   "tax_reduction": 519.58,
+   "grid_fee": 380.0,
+   "standing_charge": 60.0,
+   "supply_price": 0.0,
+   "feed_in_compensation": 0.0,
+   "feed_in_cost": 0.0,
+   "markup": 0.02,
+   "feed_in_fee": 0.015,
+   "feed_in_vat_while_netting": true
+  },
+  "lookahead_days": 1,
+  "expected": {
+   "none": {
+    "total": 415.6313620126425,
+    "bill_total": 415.6313620126425,
+    "energy_cost": 511.9231620126427,
+    "import_kwh": 2112.0225493091066,
+    "export_kwh": 859.8124313114993,
+    "curtailed_kwh": 752.210117997608,
+    "discharge_kwh": 0.0,
+    "degradation": 0.0,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "rule": {
+    "total": 235.02330902046552,
+    "bill_total": 217.87577938294305,
+    "energy_cost": 314.16757938294313,
+    "import_kwh": 1254.646067432983,
+    "export_kwh": 292.5841299019298,
+    "curtailed_kwh": 366.79788398926206,
+    "discharge_kwh": 857.3764818761235,
+    "degradation": 17.14752963752247,
+    "regime": "consumer",
+    "consistent": true
+   },
+   "optimal": {
+    "total": 129.22914091105577,
+    "bill_total": 88.51982032494232,
+    "energy_cost": 184.8116203249424,
+    "import_kwh": 1479.8834168266317,
+    "export_kwh": 736.5511844449792,
+    "curtailed_kwh": 17.16934023657809,
+    "discharge_kwh": 2035.4660293056722,
+    "degradation": 40.70932058611344,
+    "regime": "consumer",
+    "consistent": true
+   }
+  }
+ }
+]
