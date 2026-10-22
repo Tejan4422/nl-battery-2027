@@ -1,0 +1,21 @@
+# secrets
+.env
+
+# raw input data (download yourself, see README)
+data/raw/*
+!data/raw/.gitkeep
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# node
+node_modules/
+web/dist/
+
+# misc
+.DS_Store
+.vscode/
