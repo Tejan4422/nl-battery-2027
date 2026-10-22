@@ -67,7 +67,7 @@ def build_prices(year: int, source: str, ember_path: Path) -> tuple[pd.Series, d
 
 def write_json(obj: dict, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(obj, separators=(",", ":")))
+    path.write_text(json.dumps(obj, separators=(",", ":"), default=str))
     print(f"wrote {path.relative_to(ROOT)} ({path.stat().st_size / 1024:.0f} KB)")
 
 

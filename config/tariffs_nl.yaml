@@ -1,0 +1,141 @@
+# All tariff numbers used by the calculator live in this file.
+#
+# Conventions
+# - Amounts are in EUR and EXCLUDING VAT unless the unit says otherwise.
+#   VAT is added by the model where it applies.
+# - Every value has `source` and `as_of`. `verified: false` means the number
+#   has not been checked against an official source yet; such values are
+#   listed in the README TODO and flagged on the website.
+# - `placeholder: true` means there is no single correct number (it differs
+#   per supplier or grid operator) and the value is a representative guess.
+#   Change it to match your own contract.
+#
+# After editing, regenerate the website copy:
+#   uv run python -m pipeline.export_tariffs
+
+vat:
+  value: 0.21
+  unit: fraction
+  source: https://www.belastingdienst.nl/wps/wcm/connect/nl/btw/content/btw-tarief-energie
+  as_of: 2026-10-22
+  verified: false
+  note: Standard Dutch VAT rate, applies to electricity supply, energy tax and grid fees.
+
+energy_tax:
+  # Energiebelasting elektriciteit, first bracket (0 - 10,000 kWh).
+  "2026":
+    value: 0.09161
+    unit: EUR/kWh
+    source: https://www.anwb.nl/energie/energiebelasting
+    as_of: 2026-10-22
+    verified: false
+    note: Published as 0.11085 EUR/kWh incl. VAT; 0.11085 / 1.21 = 0.09161. Check against the Belastingdienst table.
+  "2027":
+    value: 0.08800
+    unit: EUR/kWh
+    source: https://www.rijksfinancien.nl/sites/default/files/bestanden/belastingplan-2027/pakket-belastingplan-2027/Fiscale-sleuteltabel-2027-incl-correctie-tarieven-energiebelasting-zelfstandigenaftrek.pdf
+    as_of: 2026-10-22
+    verified: false
+    note: Belastingplan 2027 (corrected key table), about 0.1065 EUR/kWh incl. VAT. Not final until the law is passed.
+
+tax_reduction:
+  # Vermindering energiebelasting (heffingskorting), per connection per year.
+  "2026":
+    value: 519.80
+    unit: EUR/year
+    source: https://www.anwb.nl/energie/energiebelasting
+    as_of: 2026-10-22
+    verified: false
+    note: Published as 628.96 EUR incl. VAT.
+  "2027":
+    value: 519.58
+    unit: EUR/year
+    source: https://www.overstappen.nl/nieuws/gasbelasting-stijgt-stroombelasting-daalt-energierekening-euro-180-hoger-in-2027/
+    as_of: 2026-10-22
+    verified: false
+    note: Overstappen.nl reports 628.69 EUR incl. VAT, Gaslicht reports 629.69. Sources disagree; verify.
+
+grid_fee:
+  # Netbeheerkosten (transport + capacity charge) for a 3x25A connection.
+  # Differs per grid operator (Liander, Stedin, Enexis, ...). Does not depend
+  # on consumption, so it does not affect savings, only the annual total.
+  value: 380.00
+  unit: EUR/year
+  source: https://www.liander.nl/tarieven
+  as_of: 2026-10-22
+  verified: false
+  placeholder: true
+  note: Representative value, roughly 460 EUR/year incl. VAT. Look up your own grid operator.
+
+fixed_contract:
+  supply_price:
+    value: 0.130
+    unit: EUR/kWh
+    source: https://www.energievergelijk.nl/nieuws/dit-betaal-je-bij-de-5-grootste-energieleveranciers-mei-2026
+    as_of: 2026-10-22
+    verified: false
+    placeholder: true
+    note: Supply price excluding energy tax and VAT. All-in this gives about 0.27 EUR/kWh.
+  feed_in_compensation:
+    value: 0.124
+    unit: EUR/kWh
+    source: https://www.keuze.nl/energie/terugleververgoeding
+    as_of: 2026-10-22
+    verified: false
+    placeholder: true
+    note: Terugleververgoeding. Under netting it is paid only on the annual surplus; from 2027 on every kWh fed in. No VAT (most households fall under the small-business scheme). Assumed unchanged in 2027.
+  feed_in_cost:
+    value: 0.100
+    unit: EUR/kWh
+    source: https://www.energievergelijk.nl/nieuws/de-hoogste-en-laagste-terugleverkosten-van-2026-deze-leveranciers-maken-het-verschil
+    as_of: 2026-10-22
+    verified: false
+    placeholder: true
+    note: Terugleverkosten per kWh fed in (gross, before netting), VAT added. Some suppliers use tiered monthly fees instead; this is a per-kWh approximation.
+  standing_charge:
+    value: 72.00
+    unit: EUR/year
+    source: https://www.energievergelijk.nl/nieuws/dit-betaal-je-bij-de-5-grootste-energieleveranciers-mei-2026
+    as_of: 2026-10-22
+    verified: false
+    placeholder: true
+    note: Vaste leveringskosten, about 6 EUR/month excl. VAT.
+
+dynamic_contract:
+  markup:
+    value: 0.020
+    unit: EUR/kWh
+    source: https://www.energievergelijk.nl/nieuws/de-hoogste-en-laagste-terugleverkosten-van-2026-deze-leveranciers-maken-het-verschil
+    as_of: 2026-10-22
+    verified: false
+    placeholder: true
+    note: Supplier markup (inkoopvergoeding) on the hourly day-ahead price for consumption.
+  feed_in_fee:
+    value: 0.015
+    unit: EUR/kWh
+    source: https://www.zonneplan.nl/energie/zonnepanelen/hoe-hoog-zijn-terugleverkosten/
+    as_of: 2026-10-22
+    verified: false
+    placeholder: true
+    note: Amount deducted from the day-ahead price for each kWh fed in. Some suppliers deduct nothing.
+  feed_in_vat_while_netting:
+    value: true
+    unit: boolean
+    source: https://www.belastingdienst.nl/wps/wcm/connect/nl/btw/content/btw-tarief-energie
+    as_of: 2026-10-22
+    verified: false
+    note: Whether, under netting (2026), the hourly feed-in price is credited including VAT. Approximation applied to all feed-in; verify with supplier terms.
+  standing_charge:
+    value: 60.00
+    unit: EUR/year
+    source: https://www.energievergelijk.nl/nieuws/dit-betaal-je-bij-de-5-grootste-energieleveranciers-mei-2026
+    as_of: 2026-10-22
+    verified: false
+    placeholder: true
+    note: Vaste leveringskosten, about 5 EUR/month excl. VAT.
+
+# Which tax year applies to each set of rules. The 2027 scenario uses the
+# 2027 energy tax but the same supplier prices as 2026 (unknown yet).
+rules:
+  "2026": {netting: true, tax_year: "2026"}
+  "2027": {netting: false, tax_year: "2027"}
