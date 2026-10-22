@@ -4,7 +4,7 @@ import type { PriceFile, ProfileFile } from "./model/household";
 import type { TariffConfig, TariffEntry } from "./model/tariffs";
 import type { Contract } from "./model/types";
 import { dayTable, renderDay, renderMonthly } from "./ui/charts";
-import { type Lang, STRINGS, type Strings } from "./ui/i18n";
+import { STRINGS, type Strings } from "./ui/i18n";
 
 const YEARS = [2025, 2024];
 const KWH_PER_KWP = 875;
@@ -23,7 +23,6 @@ const TARIFF_FIELDS: [string, keyof Strings][] = [
 ];
 
 interface State {
-  lang: Lang;
   year: number;
   load: number;
   solar: number;
@@ -37,7 +36,7 @@ interface State {
   view: { rules: Rules; contract: Contract; season: "summer" | "winter" };
 }
 
-const DEFAULTS: Omit<State, "lang" | "tariffs"> = {
+const DEFAULTS: Omit<State, "tariffs"> = {
   year: 2025,
   load: 3500,
   solar: 3000,
@@ -50,15 +49,7 @@ const DEFAULTS: Omit<State, "lang" | "tariffs"> = {
   view: { rules: "2027", contract: "dynamic", season: "summer" },
 };
 
-const storedLang = (() => {
-  try {
-    return localStorage.getItem("lang") as Lang | null;
-  } catch {
-    return null;
-  }
-})();
-
-const state: State = { ...DEFAULTS, view: { ...DEFAULTS.view }, lang: storedLang ?? "nl", tariffs: {} };
+const state: State = { ...DEFAULTS, view: { ...DEFAULTS.view }, tariffs: {} };
 let tariffConfig: TariffConfig;
 let output: Output | null = null;
 let errorMsg = "";
@@ -66,9 +57,9 @@ let busy = false;
 const cache = new Map<string, unknown>();
 
 const $ = (id: string) => document.getElementById(id)!;
-const t = () => STRINGS[state.lang];
+const t = () => STRINGS;
 const eur = (v: number, d = 0) =>
-  new Intl.NumberFormat(state.lang === "nl" ? "nl-NL" : "en-GB", { minimumFractionDigits: d, maximumFractionDigits: d }).format(v);
+  new Intl.NumberFormat("en-GB", { minimumFractionDigits: d, maximumFractionDigits: d }).format(v);
 
 function getPath(cfg: TariffConfig, path: string): TariffEntry {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -406,15 +397,10 @@ function renderAssumptions() {
 
 function renderStatic() {
   const s = t();
-  document.documentElement.lang = state.lang;
-  document.title = state.lang === "nl" ? "Thuisbatterij na 2027" : "Home battery after 2027";
   $("title").textContent = s.title;
   $("lead").textContent = s.lead;
   $("disclaimer").textContent = s.disclaimer;
   $("footer").innerHTML = `${s.footer} <a href="${REPO_URL}" rel="noopener">${s.sourceCode}</a>`;
-  document.querySelectorAll<HTMLButtonElement>("[data-lang]").forEach((b) =>
-    b.setAttribute("aria-pressed", String(b.dataset.lang === state.lang)),
-  );
 }
 
 function renderAll() {
@@ -423,18 +409,6 @@ function renderAll() {
   renderResults();
   renderAssumptions();
 }
-
-document.querySelectorAll<HTMLButtonElement>("[data-lang]").forEach((b) =>
-  b.addEventListener("click", () => {
-    state.lang = b.dataset.lang as Lang;
-    try {
-      localStorage.setItem("lang", state.lang);
-    } catch {
-      /* private mode */
-    }
-    renderAll();
-  }),
-);
 
 let resizeTimer: number | undefined;
 let lastWidth = window.innerWidth;
