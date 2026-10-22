@@ -13,7 +13,7 @@ asking whether a home battery, a dynamic (hourly-price) contract, or both,
 pay off. This tool answers that with a transparent hour-by-hour simulation on
 real Dutch day-ahead prices.
 
-**Live site:** https://YOUR-GITHUB-USER.github.io/nl-battery-2027/ *(update after the first deploy)*
+**Live site:** https://tejan4422.github.io/nl-battery-2027/
 
 ![Screenshot of the calculator](docs/screenshot.png)
 
