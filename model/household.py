@@ -57,10 +57,15 @@ def day_starts_from_offsets(n: int, utc_offsets: list[list[int]]) -> np.ndarray:
     return np.flatnonzero(local_hour == 0)
 
 
-def load_inputs(year: int, annual_load_kwh: float, annual_solar_kwh: float,
+def default_window(data_dir: Path = DATA_DIR) -> str:
+    """The price window the website opens with (from index.json)."""
+    return json.loads((data_dir / "index.json").read_text())["default"]
+
+
+def load_inputs(window: str, annual_load_kwh: float, annual_solar_kwh: float,
                 curtail: bool = False, data_dir: Path = DATA_DIR) -> Inputs:
-    prices = json.loads((data_dir / f"prices_nl_{year}.json").read_text())
-    profiles = json.loads((data_dir / f"profiles_nl_{year}.json").read_text())
+    prices = json.loads((data_dir / f"prices_nl_{window}.json").read_text())
+    profiles = json.loads((data_dir / f"profiles_nl_{window}.json").read_text())
     if prices["start_utc"] != profiles["start_utc"]:
         raise ValueError("price and profile files do not start at the same hour")
     p = np.array(prices["prices"], dtype=float)

@@ -22,22 +22,24 @@ export interface Fixture {
   description: string;
   inputs:
     | { prices: number[]; load: number[]; solar: number[]; day_starts: number[]; curtail: boolean }
-    | { year: number; annual_load_kwh: number; annual_solar_kwh: number; curtail: boolean };
+    | { window: string; annual_load_kwh: number; annual_solar_kwh: number; curtail: boolean };
   battery: Battery;
   tariff: TariffParams;
   lookahead_days: number;
   expected: Record<"none" | "rule" | "optimal", Expected>;
 }
 
-export function yearInputs(year: number, load: number, solar: number, curtail: boolean): Inputs {
-  const prices = readJson<PriceFile>(`web/public/data/prices_nl_${year}.json`);
-  const profiles = readJson<ProfileFile>(`web/public/data/profiles_nl_${year}.json`);
+export const defaultWindow = (): string => readJson<{ default: string }>("web/public/data/index.json").default;
+
+export function windowInputs(window: string, load: number, solar: number, curtail: boolean): Inputs {
+  const prices = readJson<PriceFile>(`web/public/data/prices_nl_${window}.json`);
+  const profiles = readJson<ProfileFile>(`web/public/data/profiles_nl_${window}.json`);
   return buildInputs(prices, profiles, load, solar, curtail);
 }
 
 export function fixtureInputs(fx: Fixture): Inputs {
   const i = fx.inputs;
-  if ("year" in i) return yearInputs(i.year, i.annual_load_kwh, i.annual_solar_kwh, i.curtail);
+  if ("window" in i) return windowInputs(i.window, i.annual_load_kwh, i.annual_solar_kwh, i.curtail);
   return {
     prices: Float64Array.from(i.prices),
     load: Float64Array.from(i.load),

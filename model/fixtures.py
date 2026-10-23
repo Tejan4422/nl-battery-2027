@@ -1,7 +1,7 @@
 """Generate shared test fixtures (JSON) used by both pytest and vitest.
 
     uv run python -m model.fixtures            # small synthetic cases
-    uv run python -m model.fixtures --year     # also full-year cases on real prices (slow)
+    uv run python -m model.fixtures --full     # also 12-month cases on real prices (slow)
 
 Each fixture holds the inputs, battery, tariff parameters and the expected
 results of the Python reference (baselines and MILP). The TypeScript suite must
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .household import Battery, Inputs, load_inputs
+from .household import Battery, Inputs, default_window, load_inputs
 from .scenario import STRATEGIES, run
 from .tariffs import TariffParams, load_yaml, params_from_config
 
@@ -99,19 +99,20 @@ def small_cases():
                 case += 1
 
 
-def year_cases(year=2025, annual_load=3500.0, annual_solar=3000.0):
+def full_cases(window=None, annual_load=3500.0, annual_solar=3000.0):
+    window = window or default_window()
     cfg = load_yaml()
     batteries = {"5kwh": Battery(5.0, 2.5, 0.90, 0.02), "10kwh": Battery(10.0, 5.0, 0.90, 0.02)}
-    inputs = load_inputs(year, annual_load, annual_solar, curtail=True)
+    inputs = load_inputs(window, annual_load, annual_solar, curtail=True)
     for bname, battery in batteries.items():
         for contract in ("fixed", "dynamic"):
             for rules in ("2026", "2027"):
                 tariff = params_from_config(cfg, contract, rules)
-                print(f"  year {year} {bname} {contract} {rules}")
+                print(f"  {window} {bname} {contract} {rules}")
                 yield {
-                    "name": f"year{year}_{bname}_{contract}_{rules}",
-                    "description": f"Full year {year}, {annual_load:.0f} kWh load, {annual_solar:.0f} kWh solar",
-                    "inputs": {"year": year, "annual_load_kwh": annual_load, "annual_solar_kwh": annual_solar,
+                    "name": f"{window}_{bname}_{contract}_{rules}",
+                    "description": f"Prices {window}, {annual_load:.0f} kWh load, {annual_solar:.0f} kWh solar",
+                    "inputs": {"window": window, "annual_load_kwh": annual_load, "annual_solar_kwh": annual_solar,
                                "curtail": True},
                     "battery": asdict(battery),
                     "tariff": tariff.to_dict(),
@@ -128,11 +129,11 @@ def write(fixtures, path: Path) -> None:
 
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--year", action="store_true", help="also generate full-year fixtures (minutes)")
+    ap.add_argument("--full", action="store_true", help="also generate 12-month fixtures (about a minute)")
     args = ap.parse_args(argv)
     write(small_cases(), FIXTURE_DIR / "small_cases.json")
-    if args.year:
-        write(year_cases(), FIXTURE_DIR / "year_cases.json")
+    if args.full:
+        write(full_cases(), FIXTURE_DIR / "year_cases.json")
 
 
 if __name__ == "__main__":

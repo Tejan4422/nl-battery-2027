@@ -4,7 +4,7 @@ import { dayStartsFromOffsets, localHours, socTrajectory } from "../src/model/ho
 import { run } from "../src/model/scenario";
 import type { Battery, Flows, Inputs, TariffParams } from "../src/model/types";
 import { eta } from "../src/model/types";
-import { yearInputs } from "./helpers";
+import { defaultWindow, windowInputs } from "./helpers";
 
 const TOL = 1e-6;
 
@@ -166,7 +166,7 @@ describe("DP", () => {
   });
 
   it("runs a full year in under one second", () => {
-    const inp = yearInputs(2025, 3500, 3000, true);
+    const inp = windowInputs(defaultWindow(), 3500, 3000, true);
     const b: Battery = { capacity_kwh: 10, power_kw: 5, round_trip_efficiency: 0.9, degradation_eur_per_kwh: 0.02 };
     const buy = new Float64Array(inp.prices.length);
     const sell = new Float64Array(inp.prices.length);

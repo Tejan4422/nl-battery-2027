@@ -1,7 +1,7 @@
 """The committed fixtures must match what the Python model produces today.
 
 If a model change is intended, regenerate with `uv run python -m model.fixtures`
-(and `--year` for the full-year cases) and commit the new files.
+(and `--full` for the 12-month cases) and commit the new files.
 """
 
 import json
@@ -22,8 +22,8 @@ def load(name):
 
 def build(fx):
     i = fx["inputs"]
-    if "year" in i:
-        inputs = load_inputs(i["year"], i["annual_load_kwh"], i["annual_solar_kwh"], i["curtail"])
+    if "window" in i:
+        inputs = load_inputs(i["window"], i["annual_load_kwh"], i["annual_solar_kwh"], i["curtail"])
     else:
         inputs = Inputs(np.array(i["prices"]), np.array(i["load"]), np.array(i["solar"]),
                         np.array(i["day_starts"]), i["curtail"])
