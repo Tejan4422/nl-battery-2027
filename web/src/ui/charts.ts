@@ -155,7 +155,16 @@ export function dayTable(day: DaySeries, s: Strings): string {
 }
 
 /** Grouped bars per month: simple battery (neutral) and smart battery (accent). */
-export function renderMonthly(el: HTMLElement, rule: number[], optimal: number[], s: Strings): void {
+export function renderMonthly(
+  el: HTMLElement,
+  months: { year: number; month: number }[],
+  rule: number[],
+  optimal: number[],
+  s: Strings,
+): void {
+  const n = months.length;
+  const label = (i: number) => s.month[months[i].month];
+  const full = (i: number) => `${label(i)} ${months[i].year}`;
   const W = Math.max(280, el.clientWidth);
   const H = 220;
   const m = { top: 12, right: 8, bottom: 24, left: 44 };
@@ -173,7 +182,7 @@ export function renderMonthly(el: HTMLElement, rule: number[], optimal: number[]
   const ticks: number[] = [];
   for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) ticks.push(v);
 
-  const group = iw / 12;
+  const group = iw / n;
   const bw = Math.min(16, (group - 8) / 2);
   const neutral = css("--neutral-bar");
   const accent = css("--series-3");
@@ -199,11 +208,11 @@ export function renderMonthly(el: HTMLElement, rule: number[], optimal: number[]
     svg += `<line x1="${m.left}" x2="${W - m.right}" y1="${y(t)}" y2="${y(t)}" stroke="${grid}" stroke-width="1"/>`;
     svg += `<text x="${m.left - 6}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="${muted}">${t.toFixed(0)}</text>`;
   }
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < n; i++) {
     const gx = m.left + i * group + (group - (2 * bw + 2)) / 2;
-    svg += bar(gx, rule[i], neutral, `${s.month[i]} · ${s.rule}: EUR ${rule[i].toFixed(2)}`);
-    svg += bar(gx + bw + 2, optimal[i], accent, `${s.month[i]} · ${s.optimal}: EUR ${optimal[i].toFixed(2)}`);
-    svg += `<text x="${m.left + i * group + group / 2}" y="${H - 6}" text-anchor="middle" font-size="11" fill="${muted}">${s.month[i]}</text>`;
+    svg += bar(gx, rule[i], neutral, `${full(i)} · ${s.rule}: EUR ${rule[i].toFixed(2)}`);
+    svg += bar(gx + bw + 2, optimal[i], accent, `${full(i)} · ${s.optimal}: EUR ${optimal[i].toFixed(2)}`);
+    svg += `<text x="${m.left + i * group + group / 2}" y="${H - 6}" text-anchor="middle" font-size="11" fill="${muted}">${label(i)}</text>`;
   }
   svg += `<line x1="${m.left}" x2="${W - m.right}" y1="${y(0)}" y2="${y(0)}" stroke="${muted}" stroke-width="1"/>`;
   svg += "</svg>";

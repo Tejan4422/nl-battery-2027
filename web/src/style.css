@@ -132,3 +132,4 @@ td.best { font-weight: 650; }
 .assumptions td.num { text-align: right; white-space: nowrap; }
 .disclaimer { border-left: 3px solid var(--text-3); padding: 0.5rem 0.9rem; color: var(--text-2); font-size: 0.88rem; margin: 1.25rem 0; max-width: 80ch; }
 .foot { color: var(--text-3); font-size: 0.8rem; padding-block: 1rem 2rem; }
+.field.wide { grid-template-columns: 1fr; gap: 0.2rem; margin-bottom: 0.7rem; }

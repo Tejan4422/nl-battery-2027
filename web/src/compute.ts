@@ -42,10 +42,11 @@ export interface DaySeries {
 export interface ChartData {
   summer: DaySeries;
   winter: DaySeries;
-  monthlySaving: Record<"rule" | "optimal", number[]>; // EUR per month vs no battery
+  monthlySaving: Record<"rule" | "optimal", number[]>; // EUR per month vs no battery, in `months` order
 }
 
 export interface Output {
+  months: { year: number; month: number }[]; // calendar months of the window, in order
   table: Record<Rules, Record<Contract, Record<Strategy, ScenarioSummary>>>;
   charts: Record<Rules, Record<Contract, ChartData>>;
   ms: number;
@@ -65,6 +66,8 @@ export function applyOverrides(cfg: TariffConfig, overrides: Record<string, numb
 
 interface Calendar {
   month: Int32Array; // 0..11 per hour
+  period: Int32Array; // index into `months` per hour
+  months: { year: number; month: number }[];
   dayDate: string[]; // per day
   dayMonth: number[];
 }
@@ -76,10 +79,20 @@ function calendar(prices: PriceFile, dayStarts: Int32Array): Calendar {
   for (const [idx, off] of prices.utc_offsets) offset.fill(off, idx);
   const localDate = (i: number) => new Date(t0 + (i + offset[i]) * 3_600_000);
   const month = new Int32Array(n);
-  for (let i = 0; i < n; i++) month[i] = localDate(i).getUTCMonth();
+  const period = new Int32Array(n);
+  const months: { year: number; month: number }[] = [];
+  for (let i = 0; i < n; i++) {
+    const d = localDate(i);
+    month[i] = d.getUTCMonth();
+    const last = months[months.length - 1];
+    if (!last || last.month !== month[i] || last.year !== d.getUTCFullYear()) {
+      months.push({ year: d.getUTCFullYear(), month: month[i] });
+    }
+    period[i] = months.length - 1;
+  }
   const dayDate = Array.from(dayStarts, (s) => localDate(s).toISOString().slice(0, 10));
   const dayMonth = Array.from(dayStarts, (s) => month[s]);
-  return { month, dayDate, dayMonth };
+  return { month, period, months, dayDate, dayMonth };
 }
 
 /** Day in the given month whose price spread (max - min) is the median of that month. */
@@ -156,9 +169,9 @@ export function computeAll(
       const { buy, sell } = marginalPrices(t, inputs.prices, res.optimal.regime);
       const deg = s.battery.degradation_eur_per_kwh;
       const monthlyCost = (r: Result) => {
-        const m = new Array(12).fill(0);
+        const m = new Array(cal.months.length).fill(0);
         for (let i = 0; i < n; i++) {
-          m[cal.month[i]] += buy[i] * r.flows.import[i] - sell[i] * r.flows.export[i] + deg * r.flows.discharge[i];
+          m[cal.period[i]] += buy[i] * r.flows.import[i] - sell[i] * r.flows.export[i] + deg * r.flows.discharge[i];
         }
         return m;
       };
@@ -174,5 +187,5 @@ export function computeAll(
       };
     }
   }
-  return { table, charts, ms: performance.now() - t0 };
+  return { months: cal.months, table, charts, ms: performance.now() - t0 };
 }

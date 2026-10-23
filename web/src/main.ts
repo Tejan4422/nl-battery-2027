@@ -6,7 +6,6 @@ import type { Contract } from "./model/types";
 import { dayTable, renderDay, renderMonthly } from "./ui/charts";
 import { STRINGS, type Strings } from "./ui/i18n";
 
-const YEARS = [2025, 2024];
 const KWH_PER_KWP = 875;
 // set by the Pages workflow from the repository name
 const REPO_URL = import.meta.env.VITE_REPO_URL ?? "https://github.com/";
@@ -22,8 +21,15 @@ const TARIFF_FIELDS: [string, keyof Strings][] = [
   ["energy_tax.2027", "tax2027"],
 ];
 
+interface PriceWindow {
+  id: string;
+  start: string;
+  end: string;
+  source: string;
+}
+
 interface State {
-  year: number;
+  window: string;
   load: number;
   solar: number;
   capacity: number;
@@ -37,7 +43,7 @@ interface State {
 }
 
 const DEFAULTS: Omit<State, "tariffs"> = {
-  year: 2025,
+  window: "",
   load: 3500,
   solar: 3000,
   capacity: 5,
@@ -51,6 +57,7 @@ const DEFAULTS: Omit<State, "tariffs"> = {
 
 const state: State = { ...DEFAULTS, view: { ...DEFAULTS.view }, tariffs: {} };
 let tariffConfig: TariffConfig;
+let windows: PriceWindow[] = [];
 let output: Output | null = null;
 let errorMsg = "";
 let busy = false;
@@ -119,8 +126,8 @@ async function compute() {
   busy = true;
   renderStatus();
   const [prices, profiles] = await Promise.all([
-    fetchJson<PriceFile>(`data/prices_nl_${state.year}.json`),
-    fetchJson<ProfileFile>(`data/profiles_nl_${state.year}.json`),
+    fetchJson<PriceFile>(`data/prices_nl_${state.window}.json`),
+    fetchJson<ProfileFile>(`data/profiles_nl_${state.window}.json`),
   ]);
   worker.postMessage({ id: ++requestId, prices, profiles, tariffs: tariffConfig, settings: settings() });
 }
@@ -141,8 +148,10 @@ function renderInputs() {
     <h2>${s.inputs}</h2>
     <fieldset>
       <legend>${s.household}</legend>
-      <div class="field"><label for="year">${s.priceYear}</label>
-        <select id="year">${YEARS.map((y) => `<option${y === state.year ? " selected" : ""}>${y}</option>`).join("")}</select></div>
+      <div class="field wide"><label for="window">${s.priceYear}</label>
+        <select id="window">${windows
+          .map((w) => `<option value="${w.id}"${w.id === state.window ? " selected" : ""}>${monthRange(w)}</option>`)
+          .join("")}</select></div>
       ${numberField("load", s.consumption, state.load, 100)}
       ${numberField("solar", s.solar, state.solar, 100)}
       ${numberField("kwp", s.kwp, +(state.solar / KWH_PER_KWP).toFixed(2), 0.1)}
@@ -188,8 +197,8 @@ function renderInputs() {
     ($("solar") as HTMLInputElement).value = String(state.solar);
     schedule();
   });
-  $("year").addEventListener("change", (e) => {
-    state.year = Number((e.target as HTMLSelectElement).value);
+  $("window").addEventListener("change", (e) => {
+    state.window = (e.target as HTMLSelectElement).value;
     schedule();
   });
   $("curtail").addEventListener("change", (e) => {
@@ -296,7 +305,8 @@ function renderResults() {
     <div class="card">
       <h2>${s.headline("2027")}</h2>
       <div class="stats">${stat("dynamic")}${stat("fixed")}</div>
-      <p id="status" class="status" style="margin-top:.6rem"></p>
+      <p class="note" style="margin-top:.6rem">${pricesFrom()}</p>
+      <p id="status" class="status"></p>
     </div>
     <div class="card">
       <h2>${s.annualCost}</h2>
@@ -343,7 +353,22 @@ function drawCharts() {
   const v = state.view;
   const chart = output.charts[v.rules][v.contract];
   renderDay($("day"), chart[v.season], t());
-  renderMonthly($("monthly"), chart.monthlySaving.rule, chart.monthlySaving.optimal, t());
+  renderMonthly($("monthly"), output.months, chart.monthlySaving.rule, chart.monthlySaving.optimal, t());
+}
+
+const fmtDate = (iso: string, opts: Intl.DateTimeFormatOptions) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-GB", { ...opts, timeZone: "UTC" });
+
+function monthRange(w: PriceWindow): string {
+  const m = { month: "short", year: "numeric" } as const;
+  return `${fmtDate(w.start, m)} - ${fmtDate(w.end, m)}`;
+}
+
+function pricesFrom(): string {
+  const w = windows.find((x) => x.id === state.window);
+  if (!w) return "";
+  const d = { day: "numeric", month: "short", year: "numeric" } as const;
+  return t().pricesFrom(fmtDate(w.start, d), fmtDate(w.end, d), w.source);
 }
 
 // ---- assumptions ----
@@ -423,6 +448,9 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", dra
 (async () => {
   try {
     tariffConfig = await fetchJson<TariffConfig>("data/tariffs.json");
+    const index = await fetchJson<{ default: string; windows: PriceWindow[] }>("data/index.json");
+    windows = index.windows;
+    state.window = index.default;
   } catch (e) {
     errorMsg = String(e);
     renderStatic();
