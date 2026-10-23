@@ -1,10 +1,11 @@
 const en = {
-  title: "What is my home battery worth after 2027?",
-  lead:
-    "On 1 January 2027 the Dutch net-metering scheme (salderingsregeling) ends: electricity you feed " +
-    "into the grid is no longer netted 1:1 against what you consume. This calculator simulates a " +
-    "household hour by hour on real Dutch day-ahead prices and compares no battery, a simple battery " +
-    "and a smart battery, on a fixed and on a dynamic contract.",
+  title: "Home battery calculator",
+  subtitle: "Netherlands · after net metering ends on 1 January 2027",
+  about: "About this calculator",
+  aboutText: [
+    "On 1 January 2027 the Dutch net-metering scheme (salderingsregeling) ends. Electricity you feed into the grid is no longer netted 1:1 against what you consume: every kWh taken from the grid is paid at the full price including energy tax, and every kWh fed in earns a much lower feed-in compensation.",
+    "This calculator simulates a household with solar panels hour by hour over twelve months of real Dutch day-ahead prices. It compares no battery, a simple battery (charges from solar surplus, discharges when the house consumes) and a smart battery (scheduled on today's and tomorrow's hourly prices), each on a fixed and on a dynamic contract, under the 2026 rules with net metering and the 2027 rules without.",
+  ],
   inputs: "Your situation",
   household: "Household",
   priceYear: "Price period (day-ahead)",

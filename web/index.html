@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Home battery after 2027</title>
+    <title>Home battery calculator NL 2027</title>
     <link rel="icon" href="data:," />
     <meta name="description" content="What is a home battery worth after the end of Dutch net metering? Hour-by-hour simulation on real day-ahead prices." />
     <meta property="og:title" content="What is my home battery worth after 2027?" />
@@ -12,15 +12,18 @@
   <body>
     <header class="top">
       <div class="wrap top-inner">
-        <h1 id="title"></h1>
+        <div>
+          <h1 id="title"></h1>
+          <p id="subtitle" class="subtitle"></p>
+        </div>
       </div>
     </header>
     <main class="wrap">
-      <p id="lead" class="lead"></p>
       <div class="layout">
         <aside id="inputs" class="panel inputs"></aside>
         <section id="results" class="results" aria-live="polite"></section>
       </div>
+      <section id="about" class="panel about"></section>
       <section id="assumptions" class="panel assumptions"></section>
       <p id="disclaimer" class="disclaimer"></p>
     </main>

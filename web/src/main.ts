@@ -468,7 +468,8 @@ function renderAssumptions() {
 function renderStatic() {
   const s = t();
   $("title").textContent = s.title;
-  $("lead").textContent = s.lead;
+  $("subtitle").textContent = s.subtitle;
+  $("about").innerHTML = `<h2>${s.about}</h2>${s.aboutText.map((p) => `<p>${p}</p>`).join("")}`;
   $("disclaimer").textContent = s.disclaimer;
 }
 

@@ -56,7 +56,10 @@ h3 { font-size: 0.95rem; font-weight: 600; margin: 1rem 0 0.5rem; }
 .top { background: var(--surface); border-bottom: 1px solid var(--border); }
 .top-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 0.9rem; }
 
-.lead { color: var(--text-2); max-width: 75ch; margin: 1.25rem 0; }
+.subtitle { color: var(--text-2); font-size: 0.85rem; margin: 0.15rem 0 0; }
+main.wrap { padding-top: 1.25rem; }
+.about { margin-top: 1.25rem; }
+.about p { color: var(--text-2); font-size: 0.9rem; max-width: 80ch; margin: 0 0 0.6rem; }
 .layout { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 1.25rem; align-items: start; }
 @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
 
