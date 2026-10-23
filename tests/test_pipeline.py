@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from pipeline.export import price_payload, utc_offset_changes
-from pipeline.normalise import local_year_bounds, slice_local_year, to_hourly
+from pipeline.normalise import Window, local_year_bounds, slice_local_year, to_hourly
 from pipeline.validate import ValidationError, validate_year
 
 
@@ -123,7 +123,8 @@ class TestValidate:
 
 def test_payload_shape():
     s = year_series(2025, value=12.3456)
-    p = price_payload(s, 2025, "test")
+    p = price_payload(s, Window.year(2025), "test")
+    assert p["start_local"] == "2025-01-01" and p["end_local"] == "2025-12-31"
     assert p["start_utc"] == "2024-12-31T23:00:00Z"
     assert len(p["prices"]) == 8760
     assert p["prices"][0] == 12.35

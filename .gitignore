@@ -19,3 +19,4 @@ web/dist/
 # misc
 .DS_Store
 .vscode/
+data/processed/

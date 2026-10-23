@@ -1,4 +1,4 @@
-"""Hourly consumption and solar profiles, normalised to sum to 1 over the year.
+"""Hourly consumption and solar profiles, normalised to sum to 1 over a 12-month window.
 
 The model multiplies these by the annual totals entered by the user, so only
 the shape matters here.
@@ -18,7 +18,9 @@ Solar (synthetic)
     day in a month has the same profile, so cloudy days are not represented.
     KNMI irradiance data would be the next step.
 
-    uv run python -m pipeline.profiles --year 2025
+    uv run python -m pipeline.profiles --window 2025-10-01_2026-09-30 --load-profile nedu.csv
+
+(pipeline.export writes the synthetic profiles for every price window it exports.)
 """
 
 import argparse
@@ -28,7 +30,7 @@ import numpy as np
 import pandas as pd
 
 from .export import OUT_DIR, write_json
-from .normalise import TZ, local_year_bounds
+from .normalise import TZ, Window
 
 LAT, LON = 52.10, 5.18
 
@@ -47,8 +49,9 @@ LIGHTING = 0.25
 MONTH_SOLAR = np.array([2.6, 4.4, 8.0, 11.6, 13.3, 13.2, 13.4, 11.6, 9.0, 6.4, 3.0, 2.0])
 
 
-def hour_index(year: int) -> pd.DatetimeIndex:
-    start, end = local_year_bounds(year)
+def hour_index(w: Window | int) -> pd.DatetimeIndex:
+    w = Window.year(w) if isinstance(w, int) else w
+    start, end = w.bounds_utc()
     return pd.date_range(start, end, freq="1h", inclusive="left")
 
 
@@ -107,12 +110,13 @@ def load_from_csv(path: Path, index: pd.DatetimeIndex) -> np.ndarray:
     return (hourly / hourly.sum()).to_numpy()
 
 
-def profile_payload(year: int, load_csv: Path | None = None) -> dict:
-    index = hour_index(year)
+def profile_payload(w: Window | int, load_csv: Path | None = None) -> dict:
+    w = Window.year(w) if isinstance(w, int) else w
+    index = hour_index(w)
     load = load_from_csv(load_csv, index) if load_csv else synthetic_load(index)
     solar = synthetic_solar(index)
     return {
-        "year": year,
+        "window": w.id,
         "start_utc": index[0].strftime("%Y-%m-%dT%H:%M:%SZ"),
         "load_source": str(load_csv.name) if load_csv else "synthetic",
         "solar_source": "synthetic clear-sky, De Bilt",
@@ -124,11 +128,12 @@ def profile_payload(year: int, load_csv: Path | None = None) -> dict:
 
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--year", type=int, nargs="+", default=[2025])
+    ap.add_argument("--window", nargs="+", required=True, help="<first>_<last> local dates, or a year")
     ap.add_argument("--load-profile", type=Path, default=None)
     args = ap.parse_args(argv)
-    for year in args.year:
-        write_json(profile_payload(year, args.load_profile), OUT_DIR / f"profiles_nl_{year}.json")
+    for spec in args.window:
+        w = Window.year(int(spec)) if spec.isdigit() else Window.from_id(spec)
+        write_json(profile_payload(w, args.load_profile), OUT_DIR / f"profiles_nl_{w.id}.json")
 
 
 if __name__ == "__main__":

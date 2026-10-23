@@ -1,4 +1,4 @@
-"""Checks on an hourly price series for one local year.
+"""Checks on an hourly price series for a window of local dates.
 
 - duplicates: hard error
 - gaps: up to `max_fill_hours` consecutive missing hours are linearly
@@ -13,7 +13,7 @@ from dataclasses import asdict, dataclass, field
 import numpy as np
 import pandas as pd
 
-from .normalise import TZ, local_year_bounds
+from .normalise import TZ, Window
 
 # SDAC harmonised clearing limits are -500 and +4000 EUR/MWh (the upper limit
 # can be raised automatically). The band below leaves headroom for that.
@@ -27,7 +27,7 @@ class ValidationError(ValueError):
 
 @dataclass
 class Report:
-    year: int
+    window: str
     hours: int
     filled_gaps: list[tuple[str, int]] = field(default_factory=list)
     short_days: list[str] = field(default_factory=list)
@@ -44,7 +44,7 @@ class Report:
 
     def summary(self) -> str:
         lines = [
-            f"year {self.year}: {self.hours} hours",
+            f"window {self.window}: {self.hours} hours",
             f"  price EUR/MWh: mean {self.mean:.2f}, min {self.min:.2f}, max {self.max:.2f}, "
             f"p05 {self.p05:.2f}, p95 {self.p95:.2f}",
             f"  negative-price hours: {self.negative_hours} "
@@ -68,12 +68,16 @@ def _gap_runs(missing: pd.DatetimeIndex) -> list[tuple[pd.Timestamp, int]]:
 
 
 def validate_year(s: pd.Series, year: int, max_fill_hours: int = 3) -> tuple[pd.Series, Report]:
-    """Validate and gap-fill one local year of hourly prices (UTC index)."""
+    return validate_window(s, Window.year(year), max_fill_hours)
+
+
+def validate_window(s: pd.Series, w: Window, max_fill_hours: int = 3) -> tuple[pd.Series, Report]:
+    """Validate and gap-fill hourly prices (UTC index) for a window of local dates."""
     if s.index.has_duplicates:
         dups = s.index[s.index.duplicated()].unique()
         raise ValidationError(f"{len(dups)} duplicate timestamps, first {dups[0]}")
 
-    start, end = local_year_bounds(year)
+    start, end = w.bounds_utc()
     expected = pd.date_range(start, end, freq="1h", inclusive="left")
     extra = s.index.difference(expected)
     if len(extra):
@@ -85,7 +89,7 @@ def validate_year(s: pd.Series, year: int, max_fill_hours: int = 3) -> tuple[pd.
     if too_long:
         raise ValidationError(f"gaps longer than {max_fill_hours}h: {too_long[:5]}")
     if runs and (s.iloc[0] != s.iloc[0] or s.iloc[-1] != s.iloc[-1]):
-        raise ValidationError("cannot interpolate a gap at the start or end of the year")
+        raise ValidationError("cannot interpolate a gap at the start or end of the window")
     s = s.interpolate(method="time")
 
     values = s.to_numpy()
@@ -96,7 +100,7 @@ def validate_year(s: pd.Series, year: int, max_fill_hours: int = 3) -> tuple[pd.
 
     hours_per_day = s.index.tz_convert(TZ).normalize().value_counts()
     report = Report(
-        year=year,
+        window=w.id,
         hours=len(s),
         filled_gaps=[(t.isoformat(), n) for t, n in runs],
         short_days=sorted(d.date().isoformat() for d in hours_per_day[hours_per_day == 23].index),
