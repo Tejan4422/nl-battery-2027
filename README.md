@@ -34,8 +34,10 @@ computes the annual electricity cost for:
 - **Smart battery:** schedule optimised on the hourly prices of today and
   tomorrow (day-ahead prices are published around 13:00 the day before).
 
-It then shows the annual saving, a simple payback time for a given battery
-price, a typical summer and winter day, and the saving per month. Everything
+It then shows key takeaways in plain language, what the end of net metering
+costs if nothing changes and what the best 2027 option wins back, the annual
+saving, a simple payback time and the break-even battery price over a chosen
+lifetime, a typical summer and winter day, and the saving per month. Everything
 runs in the browser; there is no backend.
 
 ## Repository layout

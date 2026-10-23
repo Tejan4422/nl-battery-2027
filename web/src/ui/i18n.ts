@@ -19,6 +19,8 @@ const en = {
   rte: "Round-trip efficiency (%)",
   degradation: "Wear cost (EUR per kWh discharged)",
   batteryPrice: "Price incl. installation (EUR)",
+  lifetime: "Lifetime (years)",
+  lifetimeHint: "Used for the break-even price. Many home batteries carry a 10-year warranty.",
   curtail: "Inverter may curtail the panels when the feed-in price is negative",
   tariffs: "Tariffs (excl. VAT)",
   tariffsHint: "Defaults from config/tariffs_nl.yaml. Change them to match your own contract.",
@@ -32,7 +34,6 @@ const en = {
   reset: "Defaults",
   results: "Results",
   calculating: "Calculating...",
-  computedIn: (ms: number) => `Computed in ${ms.toFixed(0)} ms in your browser.`,
   headline: (rules: string) => `Annual saving with a battery, ${rules} rules`,
   fixed: "Fixed contract",
   fixedShort: "Fixed",
@@ -98,7 +99,34 @@ const en = {
   disclaimer:
     "This is an estimate, not financial advice. The outcome depends strongly on the assumptions above, " +
     "your own contract and future prices, which will differ from those of the selected price period.",
-  footer: "Open source (MIT). Price data: ENTSO-E Transparency Platform; Ember (CC BY 4.0) for 2024.",
+  dataCredit:
+    "Price data: ENTSO-E Transparency Platform (bidding zone BZN|NL). 2024 prices: Ember, European " +
+    "Wholesale Electricity Price Data (CC BY 4.0).",
+  takeaways: "Key takeaways",
+  tkIncrease: (fixed: string, dynamic: string, up: boolean) =>
+    `If nothing changes, the end of net metering ${up ? "raises" : "lowers"} this household's bill by ` +
+    `<b>EUR ${fixed} a year</b> on a fixed contract (EUR ${dynamic} on a dynamic contract).`,
+  tkBest: (option: string, cost: string, gain: string) =>
+    `Cheapest option under 2027 rules: <b>${option}</b>, at EUR ${cost} a year. ` +
+    `That is EUR ${gain} a year less than a fixed contract without a battery.`,
+  tkContract: (amount: string, cheaper: boolean) =>
+    `A dynamic contract on its own, without a battery, costs EUR ${amount} a year ${cheaper ? "less" : "more"} ` +
+    `than a fixed contract under 2027 rules.`,
+  tkBattery: (contract: string, saving: string, price: string, payback: string, life: number, within: boolean, breakEven: string) =>
+    `A smart battery saves <b>EUR ${saving} a year</b> on a ${contract}. At EUR ${price} it pays back in ${payback}, ` +
+    `${within ? "within" : "longer than"} the assumed ${life}-year lifetime. ` +
+    `Over ${life} years it breaks even at a price of <b>EUR ${breakEven}</b> or less.`,
+  tkNoBattery: "Under these assumptions a battery does not lower the annual cost.",
+  optionLabel: (contract: string, strategy: string) => `${contract.toLowerCase()} with ${strategy.toLowerCase()}`,
+  optionNoBattery: (contract: string) => `${contract.toLowerCase()} without a battery`,
+  change2027: "What the end of net metering means",
+  doNothing: "Doing nothing",
+  doNothingSub: (a: string, b: string) => `Fixed contract, no battery: from EUR ${a} (2026) to EUR ${b} (2027)`,
+  bestOption: "Best option in 2027",
+  vsNothing: "Saved vs. doing nothing",
+  vsNothingSub: "Best 2027 option compared with a fixed contract and no battery",
+  breakEven: (life: number) => `break-even price over ${life} years`,
+  upTo: (v: string) => `break-even EUR ${v}`,
   error: "Something went wrong while calculating:",
   tariffNames: {
     vat: "VAT",

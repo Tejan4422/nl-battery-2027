@@ -35,6 +35,7 @@ interface State {
   rte: number;
   degradation: number;
   batteryPrice: number;
+  lifetime: number;
   curtail: boolean;
   tariffs: Record<string, number>;
   view: { rules: Rules; contract: Contract; season: "summer" | "winter" };
@@ -49,6 +50,7 @@ const DEFAULTS: Omit<State, "tariffs"> = {
   rte: 90,
   degradation: 0.02,
   batteryPrice: 4000,
+  lifetime: 10,
   curtail: true,
   view: { rules: "2027", contract: "dynamic", season: "summer" },
 };
@@ -162,6 +164,8 @@ function renderInputs() {
       ${numberField("rte", s.rte, state.rte, 1, 50, 100)}
       ${numberField("degradation", s.degradation, state.degradation, 0.01)}
       ${numberField("batteryPrice", s.batteryPrice, state.batteryPrice, 100)}
+      ${numberField("lifetime", s.lifetime, state.lifetime, 1, 1, 30)}
+      <p class="hint">${s.lifetimeHint}</p>
       <label class="check"><input id="curtail" type="checkbox"${state.curtail ? " checked" : ""}> ${s.curtail}</label>
     </fieldset>
     <details>
@@ -188,6 +192,7 @@ function renderInputs() {
   bind("rte");
   bind("degradation");
   bind("batteryPrice", () => renderResults());
+  bind("lifetime", () => renderResults());
   $("kwp").addEventListener("input", (e) => {
     const v = parseFloat((e.target as HTMLInputElement).value);
     if (!Number.isFinite(v)) return;
@@ -230,7 +235,7 @@ function renderStatus() {
   if (!el) return;
   const s = t();
   el.classList.toggle("error", !!errorMsg);
-  el.textContent = errorMsg ? `${s.error} ${errorMsg}` : busy ? s.calculating : output ? s.computedIn(output.ms) : "";
+  el.textContent = errorMsg ? `${s.error} ${errorMsg}` : busy ? s.calculating : "";
 }
 
 const contractLabel = (c: Contract) => (c === "fixed" ? t().fixed : t().dynamic);
@@ -262,8 +267,36 @@ function renderResults() {
     const v = saving("2027", c, "optimal");
     return `<div class="stat"><div class="label">${contractLabel(c)} · ${s.optimal}</div>
       <div class="value">EUR ${eur(v)}</div>
-      <div class="sub">${s.perYear} · ${s.payback.toLowerCase()} ${payback(v)}</div></div>`;
+      <div class="sub">${s.perYear} · ${s.payback.toLowerCase()} ${payback(v)}</div>
+      <div class="sub">${s.breakEven(state.lifetime)}: EUR ${eur(Math.max(v, 0) * state.lifetime)}</div></div>`;
   };
+
+  // ---- key takeaways and the cost of the 2027 change ----
+  const t26 = o.table["2026"];
+  const t27 = o.table["2027"];
+  const strategies = ["none", "rule", "optimal"] as const;
+  const options = CONTRACTS.flatMap((c) => strategies.map((k) => ({ c, k, total: t27[c][k].total })));
+  const best = options.reduce((a, b) => (b.total < a.total - 0.005 ? b : a));
+  const bestLabel = best.k === "none" ? s.optionNoBattery(contractLabel(best.c)) : s.optionLabel(contractLabel(best.c), s[best.k]);
+  // differences of rounded totals, so the numbers on the page add up
+  const r = Math.round;
+  const incF = r(t27.fixed.none.total) - r(t26.fixed.none.total);
+  const incD = r(t27.dynamic.none.total) - r(t26.dynamic.none.total);
+  const gain = r(t27.fixed.none.total) - r(best.total);
+  const contractEffect = r(t27.fixed.none.total) - r(t27.dynamic.none.total);
+  const batteryContract = CONTRACTS.reduce((a, b) => (saving("2027", b, "optimal") > saving("2027", a, "optimal") ? b : a));
+  const batSaving = saving("2027", batteryContract, "optimal");
+  const takeaways = [
+    s.tkIncrease(eur(Math.abs(incF)), eur(Math.abs(incD)), incF >= 0),
+    s.tkBest(bestLabel, eur(best.total), eur(gain)),
+    s.tkContract(eur(Math.abs(contractEffect)), contractEffect >= 0),
+    batSaving > 0.5
+      ? s.tkBattery(contractLabel(batteryContract).toLowerCase(), eur(batSaving), eur(state.batteryPrice),
+          payback(batSaving), state.lifetime, state.batteryPrice / batSaving <= state.lifetime, eur(batSaving * state.lifetime))
+      : s.tkNoBattery,
+  ];
+  const tile = (label: string, value: string, sub: string) =>
+    `<div class="stat"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${sub}</div></div>`;
 
   // one compact table per set of rules, side by side on wide screens and
   // stacked on phones, so the 2026/2027 comparison never needs side-scrolling
@@ -288,7 +321,7 @@ function renderResults() {
         (k) =>
           `<tr><td class="label-cell">${s[k]}</td>${CONTRACTS.map((c) => {
             const v = saving(r, c, k);
-            return `<td>EUR ${eur(v)}<br><span class="muted">${payback(v)}</span></td>`;
+            return `<td>EUR ${eur(v)}<br><span class="muted">${payback(v)}</span><br><span class="muted">${s.upTo(eur(Math.max(v, 0) * state.lifetime))}</span></td>`;
           }).join("")}</tr>`,
       )
       .join("");
@@ -300,11 +333,24 @@ function renderResults() {
   const day = chart[v.season];
 
   root.innerHTML = `
+    <div class="card takeaways">
+      <h2>${s.takeaways}</h2>
+      <ul>${takeaways.map((x) => `<li>${x}</li>`).join("")}</ul>
+      <p class="note">${pricesFrom()}</p>
+      <p id="status" class="status"></p>
+    </div>
+    <div class="card">
+      <h2>${s.change2027}</h2>
+      <div class="stats three">
+        ${tile(s.doNothing, `${incF >= 0 ? "+" : "-"}EUR ${eur(Math.abs(incF))}`,
+          `${s.perYear} · ${s.doNothingSub(eur(t26.fixed.none.total), eur(t27.fixed.none.total))}`)}
+        ${tile(s.bestOption, `EUR ${eur(best.total)}`, `${s.perYear} · ${bestLabel}`)}
+        ${tile(s.vsNothing, `EUR ${eur(gain)}`, `${s.perYear} · ${s.vsNothingSub}`)}
+      </div>
+    </div>
     <div class="card">
       <h2>${s.headline("2027")}</h2>
       <div class="stats">${stat("dynamic")}${stat("fixed")}</div>
-      <p class="note" style="margin-top:.6rem">${pricesFrom()}</p>
-      <p id="status" class="status"></p>
     </div>
     <div class="card">
       <h2>${s.annualCost}</h2>
@@ -313,7 +359,7 @@ function renderResults() {
     </div>
     <div class="card">
       <h2>${s.savings}</h2>
-      <p class="note" style="margin:0 0 .5rem">${s.savingVsNone} · ${s.payback.toLowerCase()} (EUR ${eur(state.batteryPrice)})</p>
+      <p class="note" style="margin:0 0 .5rem">${s.savingVsNone} · ${s.payback.toLowerCase()} (EUR ${eur(state.batteryPrice)}) · ${s.breakEven(state.lifetime)}</p>
       <div class="pair">${RULES.map(savingTable).join("")}</div>
       <p class="note">${s.paybackNote}</p>
     </div>
@@ -411,6 +457,7 @@ function renderAssumptions() {
   $("assumptions").innerHTML = `
     <h2>${s.assumptions}</h2>
     <ul>${s.modelAssumptions.map((a) => `<li>${a}</li>`).join("")}</ul>
+    <p class="note">${s.dataCredit}</p>
     <p class="note" style="margin-bottom:.5rem">${s.assumptionsLead}</p>
     <div class="table-wrap"><table><thead><tr><th>${s.colItem}</th><th>${s.colValue}</th><th>${s.colSource}</th>
       <th>${s.colAsOf}</th><th>${s.colStatus}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
@@ -423,7 +470,6 @@ function renderStatic() {
   $("title").textContent = s.title;
   $("lead").textContent = s.lead;
   $("disclaimer").textContent = s.disclaimer;
-  $("footer").textContent = s.footer;
 }
 
 function renderAll() {

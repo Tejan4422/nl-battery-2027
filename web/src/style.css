@@ -81,7 +81,12 @@ details > summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; margin
 .error { color: #d03b3b; }
 
 .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+.stats.three { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 760px) { .stats.three { grid-template-columns: 1fr; } }
 @media (max-width: 520px) { .stats { grid-template-columns: 1fr; } }
+.takeaways ul { margin: 0 0 0.5rem; padding-left: 1.1rem; }
+.takeaways li { margin-bottom: 0.45rem; max-width: 75ch; }
+.disclaimer { margin-bottom: 2rem; }
 .stat { border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 0.9rem; }
 .stat .label { font-size: 0.82rem; color: var(--text-2); }
 .stat .value { font-size: 1.8rem; font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1.2; margin: 0.15rem 0; }
@@ -131,5 +136,4 @@ td.best { font-weight: 650; }
 .assumptions td { white-space: normal; text-align: left; }
 .assumptions td.num { text-align: right; white-space: nowrap; }
 .disclaimer { border-left: 3px solid var(--text-3); padding: 0.5rem 0.9rem; color: var(--text-2); font-size: 0.88rem; margin: 1.25rem 0; max-width: 80ch; }
-.foot { color: var(--text-3); font-size: 0.8rem; padding-block: 1rem 2rem; }
 .field.wide { grid-template-columns: 1fr; gap: 0.2rem; margin-bottom: 0.7rem; }

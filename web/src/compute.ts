@@ -49,7 +49,6 @@ export interface Output {
   months: { year: number; month: number }[]; // calendar months of the window, in order
   table: Record<Rules, Record<Contract, Record<Strategy, ScenarioSummary>>>;
   charts: Record<Rules, Record<Contract, ChartData>>;
-  ms: number;
 }
 
 export function applyOverrides(cfg: TariffConfig, overrides: Record<string, number>): TariffConfig {
@@ -132,7 +131,6 @@ export function computeAll(
   baseCfg: TariffConfig,
   s: Settings,
 ): Output {
-  const t0 = performance.now();
   const cfg = applyOverrides(baseCfg, s.tariffOverrides);
   const inputs = buildInputs(prices, profiles, s.annualLoadKwh, s.annualSolarKwh, s.curtail);
   const n = inputs.prices.length;
@@ -187,5 +185,5 @@ export function computeAll(
       };
     }
   }
-  return { months: cal.months, table, charts, ms: performance.now() - t0 };
+  return { months: cal.months, table, charts };
 }
