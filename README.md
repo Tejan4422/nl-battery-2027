@@ -11,7 +11,8 @@ return.
 That makes self-consumption worth a lot more, and is why many households are
 asking whether a home battery, a dynamic (hourly-price) contract, or both,
 pay off. This tool answers that with a transparent hour-by-hour simulation on
-real Dutch day-ahead prices.
+real Dutch day-ahead prices from the
+[ENTSO-E Transparency Platform](https://transparency.entsoe.eu).
 
 **Live site:** https://tejan4422.github.io/nl-battery-2027/
 
@@ -19,8 +20,9 @@ real Dutch day-ahead prices.
 
 ## What it does
 
-For one household and one year of hourly prices it computes the annual
-electricity cost for:
+For one household and twelve months of hourly prices (by default the most
+recent 12 complete months, currently 1 October 2025 to 30 September 2026) it
+computes the annual electricity cost for:
 
 | | 2026 rules (net metering) | 2027 rules (no net metering) |
 |---|---|---|
@@ -55,13 +57,19 @@ and Node.js 20 or newer.
 
 ### 1. Price data
 
-**Ember (default).** Download the European wholesale electricity price data
-from <https://ember-energy.org/data/european-wholesale-electricity-price-data>,
-take the file for the Netherlands and save it as
-`data/raw/ember_nl_hourly.csv`. Raw data is not committed.
+Day-ahead prices come from the **ENTSO-E Transparency Platform** (bidding zone
+BZN|NL). Raw files are not committed; the processed hourly series used by the
+site is in `web/public/data/`.
 
-**ENTSO-E (optional).** Useful for the most recent days, or to get native
-15-minute prices.
+**ENTSO-E CSV export (default).** On <https://transparency.entsoe.eu> open
+*Market > Energy Prices*, select bidding zone *BZN|NL*, a year, and export
+as CSV. Save one file per year as
+`data/raw/entsoe_nl_dayahead_prices_<year>.csv`. The export uses local time
+(CET/CEST), labels the DST changes, and has 15-minute rows: before
+1 October 2025 the market cleared hourly and each hourly price is repeated four
+times.
+
+**ENTSO-E API (optional).** For scripted downloads:
 
 1. Register at <https://transparency.entsoe.eu>.
 2. Email transparency@entsoe.eu with the subject "Restful API access" and the
@@ -70,32 +78,49 @@ take the file for the Netherlands and save it as
    Settings*.
 4. `cp .env.example .env` and put the token in `ENTSOE_API_KEY`. `.env` is in
    `.gitignore`; never commit the token.
-5. `uv sync --extra entsoe`
+5. `uv sync --extra entsoe`, then use `--source entsoe-api` below.
+
+**Ember (optional).** Ember's hourly European wholesale price CSV
+(<https://ember-energy.org/data/european-wholesale-electricity-price-data>),
+saved as `data/raw/ember_nl_hourly.csv`, is used for 2024. For the period where
+both are available, Ember's hourly values match the ENTSO-E hourly averages to
+within 0.005 EUR/MWh.
 
 ### 2. Pipeline
 
 ```bash
 uv sync
-uv run python -m pipeline.export --year 2024 2025          # prices -> web/public/data/
-uv run python -m pipeline.export --year 2025 --source entsoe
-uv run python -m pipeline.profiles --year 2024 2025         # load and solar profiles
+uv run python -m pipeline.export                            # last 12 complete months, site default
+uv run python -m pipeline.export --window 2025              # a calendar year
+uv run python -m pipeline.export --start 2025-04-01 --end 2026-03-31
+uv run python -m pipeline.export --source ember --window 2024
 uv run python -m pipeline.export_tariffs                    # YAML -> web/public/data/tariffs.json
 ```
 
-The price step converts 15-minute data to hourly averages, cuts out the local
-(Europe/Amsterdam) calendar year in UTC, checks for duplicates, gaps and
-implausible values, and prints a report:
+For each window the export:
+
+- combines the yearly CSVs into one series and keeps the quarter-hour data in
+  `data/processed/prices_nl_15min.csv`, plus hourly averages in
+  `prices_nl_hourly.csv` (both not committed)
+- resolves DST from the (CET)/(CEST) labels, with row order as a fallback for
+  the repeated October hour
+- averages to hourly, cuts out the window in local time, checks for
+  duplicates, gaps and implausible values, and prints a report
+- writes `prices_nl_<window>.json` and the matching
+  `profiles_nl_<window>.json`, and adds the window to `index.json`, which the
+  site's price-period menu reads
 
 ```
-year 2025: 8760 hours
-  price EUR/MWh: mean 86.81, min -350.00, max 523.47, p05 -0.51, p95 156.00
-  negative-price hours: 584 (6.7%)
-  DST days: 23h ['2025-03-30'], 25h ['2025-10-26']
+window 2025-10-01_2026-09-30: 8760 hours
+  price EUR/MWh: mean 103.03, min -498.44, max 799.36, p05 0.00, p95 192.59
+  negative-price hours: 436 (5.0%)
+  DST days: 23h ['2026-03-29'], 25h ['2025-10-26']
 ```
 
-Gaps of up to 3 hours are interpolated and listed as a warning (Ember's 2026
-file has two such gaps at month boundaries). Longer gaps stop the pipeline.
-Negative prices are valid and kept.
+Empty and `n/e` prices are treated as missing. Gaps of up to 3 hours are
+interpolated and listed as a warning; longer gaps stop the pipeline.
+Negative prices are valid and kept. The simulation itself is hourly; the
+quarter-hour series is stored so a 15-minute simulation can be added later.
 
 ### 3. Tests
 
@@ -105,7 +130,7 @@ cd web && npm ci && npm test      # TypeScript: tariffs, invariants, DP vs MILP
 ```
 
 To regenerate the shared fixtures after an intended model change:
-`uv run python -m model.fixtures --year` (about a minute).
+`uv run python -m model.fixtures --full` (about a minute).
 
 ### 4. Site
 
@@ -199,19 +224,20 @@ The two implementations share their inputs through JSON fixtures in
 baselines (no battery, simple battery) to 1e-6 EUR and get within 1% of the
 MILP's annual energy cost with the DP.
 
-Results on 2025 prices, 3,500 kWh consumption, 3,000 kWh solar, curtailment on,
-wear cost 0.02 EUR/kWh (annual totals in EUR incl. fixed charges):
+Results on prices from 1 October 2025 to 30 September 2026, 3,500 kWh
+consumption, 3,000 kWh solar, curtailment on, wear cost 0.02 EUR/kWh (annual
+totals in EUR incl. fixed charges):
 
 | battery | contract | rules | no battery | MILP | DP | DP - MILP | % of energy cost | DP time |
 |---|---|---|---|---|---|---|---|---|
-| 5 kWh / 2.5 kW | fixed | 2026 | 247.09 | 174.96 | 174.96 | 0.00 | 0.00% | 69 ms |
-| 5 kWh / 2.5 kW | fixed | 2027 | 470.50 | 265.61 | 265.61 | 0.00 | 0.00% | 67 ms |
-| 5 kWh / 2.5 kW | dynamic | 2026 | 254.98 | 78.63 | 78.81 | 0.18 | 0.05% | 67 ms |
-| 5 kWh / 2.5 kW | dynamic | 2027 | 415.63 | 176.77 | 177.29 | 0.52 | 0.10% | 69 ms |
-| 10 kWh / 5 kW | fixed | 2026 | 247.09 | 174.51 | 174.51 | 0.00 | 0.00% | 216 ms |
-| 10 kWh / 5 kW | fixed | 2027 | 470.50 | 264.35 | 264.35 | 0.00 | 0.00% | 218 ms |
-| 10 kWh / 5 kW | dynamic | 2026 | 254.98 | -44.50 | -44.25 | 0.25 | 0.07% | 212 ms |
-| 10 kWh / 5 kW | dynamic | 2027 | 415.63 | 129.23 | 129.40 | 0.17 | 0.03% | 219 ms |
+| 5 kWh / 2.5 kW | fixed | 2026 | 247.10 | 175.05 | 175.05 | 0.00 | 0.00% | 68 ms |
+| 5 kWh / 2.5 kW | fixed | 2027 | 470.53 | 265.67 | 265.67 | 0.00 | 0.00% | 68 ms |
+| 5 kWh / 2.5 kW | dynamic | 2026 | 249.52 | 42.83 | 43.00 | 0.17 | 0.05% | 67 ms |
+| 5 kWh / 2.5 kW | dynamic | 2027 | 419.64 | 147.89 | 148.45 | 0.57 | 0.11% | 68 ms |
+| 10 kWh / 5 kW | fixed | 2026 | 247.10 | 174.61 | 174.61 | 0.00 | 0.00% | 214 ms |
+| 10 kWh / 5 kW | fixed | 2027 | 470.53 | 264.43 | 264.43 | 0.00 | 0.00% | 215 ms |
+| 10 kWh / 5 kW | dynamic | 2026 | 249.52 | -113.12 | -112.92 | 0.20 | 0.06% | 215 ms |
+| 10 kWh / 5 kW | dynamic | 2027 | 419.64 | 84.65 | 84.95 | 0.30 | 0.06% | 209 ms |
 
 The DP is never better than the MILP, as expected for a discretised method,
 and the largest gap is 0.2% of the battery's saving. The full set of 12
@@ -222,6 +248,8 @@ Other checks, in both languages where it applies:
 - tariff formulas against hand-computed cases, and marginal prices against
   finite differences of the annual bill
 - 23- and 25-hour days, 15-minute input, negative prices, gaps, duplicates
+- ENTSO-E exports: DST labels (and their absence), `n/e` rows, overlapping
+  files that must agree, choosing the last 12 complete months
 - energy balance every hour, state of charge within bounds, power limits, no
   simultaneous charge/discharge
 - the optimiser is never worse than no battery or the simple rule
@@ -241,7 +269,7 @@ simulation did not reproduce. Both are fixed.
 - The consumption profile is synthetic and the same every year.
 - The smart battery has perfect foresight of prices, consumption and solar
   for today and tomorrow. Real controllers will do somewhat worse.
-- Historical prices (default 2025) are used for 2026 and 2027. Future prices
+- Historical prices (by default the last 12 complete months) stand in for 2026 and 2027. Future prices
   will differ, and more batteries on the grid will reduce price spreads.
 - The 2026 dynamic-contract result depends on whether feed-in is credited
   including VAT under net metering (`feed_in_vat_while_netting`). This is
@@ -287,12 +315,12 @@ Other open items:
 
 ## Data sources and licence
 
-- Wholesale prices: [Ember](https://ember-energy.org/data/european-wholesale-electricity-price-data),
+- Day-ahead prices: [ENTSO-E Transparency Platform](https://transparency.entsoe.eu),
+  bidding zone BZN|NL, used under the ENTSO-E terms and conditions. The
+  processed hourly series in `web/public/data/` is derived from it.
+- 2024 prices: [Ember](https://ember-energy.org/data/european-wholesale-electricity-price-data),
   European Wholesale Electricity Price Data, licensed under
-  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The processed
-  hourly series in `web/public/data/` is derived from it.
-- Optional: [ENTSO-E Transparency Platform](https://transparency.entsoe.eu),
-  day-ahead prices, used under the ENTSO-E terms and conditions.
+  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 - Tariff values: sources are listed per value in `config/tariffs_nl.yaml`.
 
 Code: [MIT licence](LICENSE).
