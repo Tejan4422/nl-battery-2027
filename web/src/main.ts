@@ -7,8 +7,6 @@ import { dayTable, renderDay, renderMonthly } from "./ui/charts";
 import { STRINGS, type Strings } from "./ui/i18n";
 
 const KWH_PER_KWP = 875;
-// set by the Pages workflow from the repository name
-const REPO_URL = import.meta.env.VITE_REPO_URL ?? "https://github.com/";
 
 // tariff fields exposed in the UI: [dotted path in config, label key]
 const TARIFF_FIELDS: [string, keyof Strings][] = [
@@ -425,7 +423,7 @@ function renderStatic() {
   $("title").textContent = s.title;
   $("lead").textContent = s.lead;
   $("disclaimer").textContent = s.disclaimer;
-  $("footer").innerHTML = `${s.footer} <a href="${REPO_URL}" rel="noopener">${s.sourceCode}</a>`;
+  $("footer").textContent = s.footer;
 }
 
 function renderAll() {

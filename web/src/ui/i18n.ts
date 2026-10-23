@@ -99,7 +99,6 @@ const en = {
     "This is an estimate, not financial advice. The outcome depends strongly on the assumptions above, " +
     "your own contract and future prices, which will differ from those of the selected price period.",
   footer: "Open source (MIT). Price data: ENTSO-E Transparency Platform; Ember (CC BY 4.0) for 2024.",
-  sourceCode: "Source code and method",
   error: "Something went wrong while calculating:",
   tariffNames: {
     vat: "VAT",
